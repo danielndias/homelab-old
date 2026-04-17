@@ -1,0 +1,53 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: audiobookshelf-ingress
+  namespace: external-services
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - audiobookshelf.dassidias.com
+    secretName: audiobookshelf-tls
+  rules:
+  - host: audiobookshelf.dassidias.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: audiobookshelf-service
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: audiobookshelf-external-ingress
+  labels:
+    app: audiobookshelf
+  namespace: external-services
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /        # Rewrite all paths to root
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"    # Increase max upload size
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+    external-dns.alpha.kubernetes.io/hostname: audiobookshelf.danieldias.ca
+    external-dns.alpha.kubernetes.io/target: 5d3e9d90-1f75-4817-b2a9-0bb2b5a5844e.cfargotunnel.com
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: audiobookshelf.danieldias.ca
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: audiobookshelf-service  # Route to this service
+            port:
+              number: 80                 # Service port to route to

@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: local-speedtest
+  name: local-speedtest
+  namespace: local-speedtest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: local-speedtest
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: local-speedtest
+    spec:
+      containers:
+        - image: openspeedtest/latest:latest
+          name: local-speedtest
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+            - containerPort: 3001
+              protocol: TCP
+      restartPolicy: Always
